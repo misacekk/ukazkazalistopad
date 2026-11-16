@@ -1,0 +1,107 @@
+.dark-tile-button {
+    -fx-background-color:
+            linear-gradient(to bottom, #4a3e36 0%, #2b231d 50%, #1c1612 100%),
+            linear-gradient(to bottom, #5a4b40, #17120e);
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 6px, 4px;
+    -fx-border-color: #6e5b4b #2a2018 #1a130e #5e4d3f;
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #f0e6d2;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.7), 6, 0.0, 0, 3);
+    -fx-cursor: hand;
+}
+
+.dark-tile-button:hover {
+    -fx-background-color:
+            linear-gradient(to bottom, #5c4d42 0%, #382e27 50%, #271f19 100%),
+            linear-gradient(to bottom, #6d5b4d, #221a14);
+    -fx-text-fill: #ffffff;
+    -fx-border-color: #8c735d #3d2f24 #271b13 #7c6652;
+}
+
+.dark-tile-button:pressed {
+    -fx-background-color: linear-gradient(to bottom, #16120e 0%, #2b231d 100%);
+    -fx-effect: innershadow(three-pass-box, rgba(0, 0, 0, 0.8), 6, 0.0, 0, 2);
+}
+
+.scroll-title {
+    -fx-text-fill: #3b200b;
+    -fx-font-weight: bold;
+}
+
+.scroll-text {
+    -fx-text-fill: #2c1a0c;
+}
+
+.btn-red-fantasy, .dark-tile-button, .btn-fantasy {
+    -fx-background-color:
+            linear-gradient(to bottom, #d62828 0%, #800f0f 50%, #3b0404 100%),
+            linear-gradient(to bottom, #a31c1c 0%, #240202 100%);
+    -fx-background-insets: 0, 2;
+    -fx-background-radius: 6px, 4px;
+
+    -fx-border-color: #000000;
+    -fx-border-width: 2px;
+    -fx-border-radius: 6px;
+
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.85), 8, 0.0, 0, 4);
+    -fx-cursor: hand;
+}
+
+.btn-red-fantasy:hover, .dark-tile-button:hover, .btn-fantasy:hover {
+    -fx-background-color:
+            linear-gradient(to bottom, #ef4444 0%, #b91c1c 50%, #520606 100%),
+            linear-gradient(to bottom, #dc2626 0%, #380404 100%);
+    -fx-text-fill: #ffd700;
+    -fx-border-color: #000000;
+    -fx-effect: dropshadow(three-pass-box, rgba(239, 68, 68, 0.6), 14, 0.0, 0, 0);
+}
+
+.btn-red-fantasy:pressed, .dark-tile-button:pressed, .btn-fantasy:pressed {
+    -fx-translate-y: 2px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.9), 3, 0.0, 0, 1);
+}
+
+.scroll-title {
+    -fx-text-fill: #3b200b;
+    -fx-font-weight: bold;
+}
+
+.scroll-text {
+    -fx-text-fill: #2c1a0c;
+}
+
+.scroll-pane {
+    -fx-background-color: #121214;
+    -fx-border-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: #121214;
+}
+
+.card-container {
+    -fx-padding: 4px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-border-width: 0px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 10, 0, 0, 4);
+}
+
+.card-container:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(255, 215, 0, 0.6), 18, 0, 0, 0);
+    -fx-scale-x: 1.04;
+    -fx-scale-y: 1.04;
+}
+
+.gold-separator .line {
+    -fx-border-color: #FFD700;
+    -fx-border-width: 1px;
+    -fx-opacity: 0.35;
+}
