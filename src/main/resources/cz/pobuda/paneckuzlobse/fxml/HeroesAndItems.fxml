@@ -30,7 +30,7 @@
                 <Insets top="15" right="35" bottom="15" left="35"/>
             </padding>
             <children>
-                <Button text="← Zpět do Menu" onAction="#zpetDoMenu" prefHeight="42.0" prefWidth="145.0"
+                <Button text="Zpět do Menu" onAction="#zpetDoMenu" prefHeight="42.0" prefWidth="145.0"
                         styleClass="btn-red-fantasy" style="-fx-font-size: 14px;" />
             </children>
         </HBox>
