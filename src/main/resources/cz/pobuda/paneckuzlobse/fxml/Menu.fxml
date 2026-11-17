@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<StackPane prefHeight="650.0" prefWidth="900.0"
+<StackPane prefHeight="1000.0" prefWidth="1600.0"
            stylesheets="@../css/style.css"
            xmlns="http://javafx.com/javafx/17"
            xmlns:fx="http://javafx.com/fxml/1"
@@ -21,20 +21,14 @@
             </image>
         </ImageView>
 
-        <VBox alignment="CENTER" spacing="25.0" style="-fx-background-color: rgba(18, 18, 20, 0.75);">
+        <VBox alignment="CENTER" spacing="25.0" style="-fx-background-color: rgba(18, 18, 20, 0.72);">
             <padding>
                 <Insets top="40.0" right="40.0" bottom="40.0" left="40.0" />
             </padding>
             <children>
-                <VBox alignment="CENTER" spacing="5.0">
-                    <children>
-                        <Label text="PANEČKU, ZLOB SE!" textFill="#FFD700">
-                            <font>
-                                <Font name="System Bold" size="42.0" />
-                            </font>
-                        </Label>
-                    </children>
-                </VBox>
+                <Label text="PANEČKU, ZLOB SE!" textFill="#FFD700">
+                    <font><Font name="System Bold" size="46.0" /></font>
+                </Label>
 
                 <VBox alignment="CENTER" spacing="15.0" maxWidth="300.0">
                     <children>
@@ -46,5 +40,12 @@
                 </VBox>
             </children>
         </VBox>
+
+        <Label text="v1.0" StackPane.alignment="BOTTOM_RIGHT"
+               style="-fx-text-fill: #8E8E93; -fx-font-size: 13px;">
+            <StackPane.margin>
+                <Insets right="25.0" bottom="20.0" />
+            </StackPane.margin>
+        </Label>
     </children>
 </StackPane>
