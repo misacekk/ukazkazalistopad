@@ -719,12 +719,12 @@ public class GameController {
         } else if (targetPlayerCount == 3) {
             imageName = "/cz/pobuda/paneckuzlobse/images/boardfor3.png";
         } else {
-            imageName = "/cz/pobuda/paneckuzlobse/images/boardfor4.png";
+            imageName = "/cz/pobuda/paneckuzlobse/images/deskapro4-3.png";
         }
 
         InputStream is = getClass().getResourceAsStream(imageName);
         if (is == null) {
-            is = getClass().getResourceAsStream("/cz/pobuda/paneckuzlobse/images/boardfor4.png");
+            is = getClass().getResourceAsStream("/cz/pobuda/paneckuzlobse/images/deskapro4-3.png");
         }
 
         ImageView boardImage = new ImageView();
