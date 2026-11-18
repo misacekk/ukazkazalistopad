@@ -3,89 +3,87 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="1000.0" prefWidth="1600.0"
-            style="-fx-background-color: #0f0f12;"
-            stylesheets="@../css/style.css"
-            xmlns="http://javafx.com/javafx/17"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="cz.pobuda.paneckuzlobse.controller.RulesController">
+<BorderPane prefHeight="1000.0" prefWidth="1600.0" style="-fx-background-color: #0f0f12;" stylesheets="@../css/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cz.pobuda.paneckuzlobse.controller.RulesController">
 
     <top>
-        <HBox alignment="CENTER_LEFT"
-              style="-fx-background-color: #16161a; -fx-border-color: #2a2a30; -fx-border-width: 0 0 1 0;"
-              BorderPane.alignment="CENTER">
+        <HBox alignment="CENTER_LEFT" style="-fx-background-color: #16161a; -fx-border-color: #2a2a30; -fx-border-width: 0 0 1 0;" BorderPane.alignment="CENTER">
             <padding>
-                <Insets top="15" right="35" bottom="15" left="35"/>
+                <Insets bottom="15" left="35" right="35" top="15" />
             </padding>
             <children>
-                <Button text="Zpět do Menu" onAction="#zpetDoMenu" prefHeight="42.0" prefWidth="145.0"
-                        styleClass="btn-red-fantasy" style="-fx-font-size: 14px;" />
+                <Button onAction="#zpetDoMenu" prefHeight="42.0" prefWidth="145.0" style="-fx-font-size: 14px;" styleClass="btn-red-fantasy" text="Zpět do Menu" />
             </children>
         </HBox>
     </top>
 
     <center>
-        <ScrollPane fitToWidth="true"
-                    style="-fx-background: #0f0f12; -fx-background-color: #0f0f12; -fx-border-color: transparent;">
-            <content>
-                <VBox alignment="TOP_CENTER" spacing="25.0" style="-fx-padding: 30px 50px;">
+        <StackPane BorderPane.alignment="CENTER">
+            <children>
+                <ImageView fitHeight="927.0" fitWidth="1600.0" pickOnBounds="true" preserveRatio="false">
+                    <image>
+                        <Image url="@../images/rulesbg.jpg" />
+                    </image>
+                </ImageView>
+
+                <VBox style="-fx-background-color: rgba(12, 12, 15, 0.22);" />
+
+                <VBox alignment="TOP_CENTER">
+                    <padding>
+                        <Insets bottom="40.0" left="290.0" right="290.0" top="32.0" />
+                    </padding>
                     <children>
 
-                        <Label text="PRAVIDLA HRY"
-                               style="-fx-text-fill: #FFD700; -fx-font-size: 30px; -fx-font-weight: bold;" />
+                        <Label style="-fx-text-fill: #FFD700; -fx-font-size: 32px; -fx-font-weight: bold;" text="PRAVIDLA HRY">
+                            <VBox.margin>
+                                <Insets bottom="145.0" top="100.0" />
+                            </VBox.margin>
+                        </Label>
 
-                        <StackPane maxWidth="1280.0">
+                        <GridPane hgap="65.0">
+                            <columnConstraints>
+                                <ColumnConstraints percentWidth="50.0" />
+                                <ColumnConstraints percentWidth="50.0" />
+                            </columnConstraints>
                             <children>
-                                <ImageView fitWidth="1280.0" fitHeight="620.0" preserveRatio="false" pickOnBounds="true">
-                                    <image>
-                                        <Image url="@../images/paper.png" />
-                                    </image>
-                                </ImageView>
-
-                                <GridPane hgap="45.0" style="-fx-padding: 55px 75px;">
-                                    <columnConstraints>
-                                        <ColumnConstraints percentWidth="50.0" />
-                                        <ColumnConstraints percentWidth="50.0" />
-                                    </columnConstraints>
+                                <VBox spacing="18.0" GridPane.columnIndex="0">
                                     <children>
-                                        <VBox spacing="12.0" GridPane.columnIndex="0">
-                                            <children>
-                                                <Label text="1. ZÁKLADNÍ POHYB A DOMEČKY" styleClass="scroll-title" style="-fx-font-size: 19px;" />
-                                                <Label text="• Režimy hry: Podporuje hru pro 2 hráče (1v1), 3 hráče (1v1v1) i 4 hráče (1v1v1v1)." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                                <Label text="• Herní plán: Figurky se po obvodu desky pohybují ve směru hodinových ručiček." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                                <Label text="• Správa figurek: Každý hráč má 4 figurky, které začínají v domovském spawnu." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                                <Label text="• Nasazení figurky: Pro vyjetí figurky na startovní pole musí hráč hodit 6 (a následně hází znovu)." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                                <Label text="• Vstup do domečku: Po obkroužení celého kola zastaví figurka před vstupem do domečku. Pro vstup do cíle musí hráč v dalším tahu hodit přesně 1." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                            </children>
-                                        </VBox>
-
-                                        <VBox spacing="12.0" GridPane.columnIndex="1">
-                                            <children>
-                                                <Label text="2. SOUBOJE, TRUHLY A SCHOPNOSTI" styleClass="scroll-title" style="-fx-font-size: 19px;" />
-                                                <Label text="• Vyhazování figurek: Stoupneš-li na políčko obsazené soupeřem, jeho figurka se vrací zpět do spawnu (pokud ji nechrání pasivní schopnost)." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                                <Label text="• Truhly s předměty: Zastavením na políčku s truhlou získáš náhodný předmět (Teleport, Šťastná sedma, Čmajz). Inventář pojme max. 3 předměty." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                                <Label text="• Schopnosti hrdinů: Každý hrdina má unikátní pasivní nebo aktivní schopnost, kterou lze použít jednou za tah." wrapText="true" styleClass="scroll-text" style="-fx-font-size: 14px;" />
-                                                <Label text="• Podmínka vítězství: Vítězí hráč, který jako první úspěšně dovede do domečku všechny 4 své figurky." wrapText="true" style="-fx-text-fill: #196f27; -fx-font-size: 15px; -fx-font-weight: bold;" />
-                                            </children>
-                                        </VBox>
+                                        <Label style="-fx-font-size: 20px;" styleClass="scroll-title" text="1. ZÁKLADNÍ POHYB A DOMEČKY" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Režimy hry: Podporuje hru pro 2 hráče (1v1), 3 hráče (1v1v1) i 4 hráče (1v1v1v1)." wrapText="true" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Herní plán: Figurky se po obvodu desky pohybují ve směru hodinových ručiček." wrapText="true" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Správa figurek: Každý hráč má 4 figurky, které začínají v domovském spawnu." wrapText="true" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Nasazení figurky: Pro vyjetí figurky na startovní pole musí hráč hodit 6 (a následně hází znovu)." wrapText="true" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Vstup do domečku: Po obkroužení celého kola zastaví figurka před vstupem do domečku. Pro vstup do cíle musí hráč v dalším tahu hodit přesně 1." wrapText="true" />
                                     </children>
-                                </GridPane>
+                                </VBox>
+
+                                <VBox spacing="18.0" GridPane.columnIndex="1">
+                                    <children>
+                                        <Label style="-fx-font-size: 20px;" styleClass="scroll-title" text="2. SOUBOJE, TRUHLY A SCHOPNOSTI" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Vyhazování figurek: Stoupneš-li na políčko obsazené soupeřem, jeho figurka se vrací zpět do spawnu (pokud ji nechrání pasivní schopnost)." wrapText="true" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Truhly s předměty: Zastavením na políčku s truhlou získáš náhodný předmět (Teleport, Šťastná sedma, Čmajz). Inventář pojme max. 3 předměty." wrapText="true" />
+                                        <Label style="-fx-font-size: 15px;" styleClass="scroll-text" text="• Schopnosti hrdinů: Každý hrdina má unikátní pasivní nebo aktivní schopnost, kterou lze použít jednou za tah." wrapText="true" />
+                                        <Label style="-fx-text-fill: #196f27; -fx-font-size: 16px; -fx-font-weight: bold;" text="• Podmínka vítězství: Vítězí hráč, který jako první úspěšně dovede do domečku všechny 4 své figurky." wrapText="true" />
+                                    </children>
+                                </VBox>
                             </children>
-                        </StackPane>
+                     <rowConstraints>
+                        <RowConstraints />
+                     </rowConstraints>
+                        </GridPane>
 
                     </children>
                 </VBox>
-            </content>
-        </ScrollPane>
+            </children>
+        </StackPane>
     </center>
 </BorderPane>

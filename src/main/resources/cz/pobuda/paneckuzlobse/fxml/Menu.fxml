@@ -15,13 +15,13 @@
            xmlns:fx="http://javafx.com/fxml/1"
            fx:controller="cz.pobuda.paneckuzlobse.controller.MenuController">
     <children>
-        <ImageView fitHeight="1000.0" fitWidth="1800.0" pickOnBounds="true">
+        <ImageView fitWidth="1600.0" fitHeight="1000.0" preserveRatio="false" pickOnBounds="true">
             <image>
-                <Image url="@../images/menubg.jpg" />
+                <Image url="@../images/mainmenubg.jpg" />
             </image>
         </ImageView>
 
-        <VBox alignment="CENTER" spacing="25.0" style="-fx-background-color: rgba(18, 18, 20, 0.72);">
+        <VBox alignment="CENTER" spacing="25.0" style="-fx-background-color: rgba(18, 18, 20, 0.58);">
             <padding>
                 <Insets top="40.0" right="40.0" bottom="40.0" left="40.0" />
             </padding>

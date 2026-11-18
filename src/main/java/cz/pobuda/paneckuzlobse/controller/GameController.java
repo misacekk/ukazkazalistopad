@@ -22,6 +22,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.media.AudioClip;
 import javafx.util.Duration;
@@ -36,7 +37,7 @@ import java.util.Random;
 
 public class GameController {
 
-    @FXML private VBox selectionContainer;
+    @FXML private StackPane selectionContainer;
     @FXML private VBox modeSelectionBox;
     @FXML private VBox heroSelectionBox;
     @FXML private Label selectionTitleLabel;
@@ -85,10 +86,16 @@ public class GameController {
     @FXML
     public void initialize() {
         if (gameContent != null) gameContent.setVisible(false);
-        if (selectionContainer != null) selectionContainer.setVisible(true);
         if (modeSelectionBox != null) modeSelectionBox.setVisible(true);
         if (heroSelectionBox != null) heroSelectionBox.setVisible(false);
-        if (bottomBar != null) bottomBar.setVisible(false);
+        if (selectionContainer != null) {
+            selectionContainer.setVisible(true);
+            selectionContainer.setManaged(true);
+        }
+        if (bottomBar != null) {
+            bottomBar.setVisible(false);
+            bottomBar.setManaged(false);
+        }
         if (itemSelectionOverlay != null) itemSelectionOverlay.setVisible(false);
 
         loadSoundEffects();
@@ -172,9 +179,15 @@ public class GameController {
         if (players.size() < targetPlayerCount) {
             updateHeroSelectionUI();
         } else {
-            if (selectionContainer != null) selectionContainer.setVisible(false);
+            if (selectionContainer != null) {
+                selectionContainer.setVisible(false);
+                selectionContainer.setManaged(false);
+            }
             if (gameContent != null) gameContent.setVisible(true);
-            if (bottomBar != null) bottomBar.setVisible(true);
+            if (bottomBar != null) {
+                bottomBar.setVisible(true);
+                bottomBar.setManaged(true);
+            }
             currentPlayerIndex = 0;
             roundNumber = 1;
             addLog("Hra začala! (" + targetPlayerCount + " hráči)");
@@ -706,12 +719,12 @@ public class GameController {
         } else if (targetPlayerCount == 3) {
             imageName = "/cz/pobuda/paneckuzlobse/images/boardfor3.png";
         } else {
-            imageName = "/cz/pobuda/paneckuzlobse/images/deskapro4-3.png";
+            imageName = "/cz/pobuda/paneckuzlobse/images/boardfor4.png";
         }
 
         InputStream is = getClass().getResourceAsStream(imageName);
         if (is == null) {
-            is = getClass().getResourceAsStream("/cz/pobuda/paneckuzlobse/images/deskapro4-3.png");
+            is = getClass().getResourceAsStream("/cz/pobuda/paneckuzlobse/images/boardfor4.png");
         }
 
         ImageView boardImage = new ImageView();

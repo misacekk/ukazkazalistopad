@@ -5,6 +5,7 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -39,9 +40,10 @@
         <StackPane BorderPane.alignment="CENTER">
             <children>
 
-                <HBox fx:id="gameContent" visible="false" alignment="CENTER" spacing="25.0">
+                <HBox fx:id="gameContent" visible="false" alignment="CENTER" spacing="25.0"
+                      style="-fx-background-color: #121214;">
                     <padding>
-                        <Insets top="15" right="25" bottom="15" left="25"/>
+                        <Insets top="8" right="25" bottom="8" left="25"/>
                     </padding>
                     <children>
 
@@ -103,9 +105,16 @@
                     </children>
                 </HBox>
 
-                <VBox fx:id="selectionContainer" alignment="CENTER" spacing="30.0"
-                      style="-fx-background-color: #121214;">
+                <StackPane fx:id="selectionContainer">
                     <children>
+                        <ImageView fitWidth="1600.0" fitHeight="927.0" preserveRatio="false" pickOnBounds="true">
+                            <image>
+                                <Image url="@../images/selectionbg.jpg" />
+                            </image>
+                        </ImageView>
+
+                        <VBox style="-fx-background-color: rgba(18, 18, 20, 0.58);" />
+
                         <VBox fx:id="modeSelectionBox" alignment="CENTER" spacing="25.0">
                             <children>
                                 <Label text="ZVOL REŽIM HRY"
@@ -152,7 +161,7 @@
                             </children>
                         </VBox>
                     </children>
-                </VBox>
+                </StackPane>
 
                 <VBox fx:id="itemSelectionOverlay" alignment="CENTER" spacing="25.0" visible="false"
                       style="-fx-background-color: rgba(18, 18, 20, 0.95);">
@@ -170,7 +179,7 @@
     </center>
 
     <bottom>
-        <VBox fx:id="bottomBar" visible="false"
+        <VBox fx:id="bottomBar" visible="false" managed="false"
               style="-fx-background-color: #1c1c1e; -fx-border-color: #2c2c2e; -fx-border-width: 1 0 0 0;"
               BorderPane.alignment="CENTER">
             <children>
@@ -183,7 +192,7 @@
 
                 <GridPane>
                     <padding>
-                        <Insets top="15" right="180" bottom="15" left="180"/>
+                        <Insets top="10" right="180" bottom="12" left="180"/>
                     </padding>
                     <columnConstraints>
                         <ColumnConstraints percentWidth="28.0" />

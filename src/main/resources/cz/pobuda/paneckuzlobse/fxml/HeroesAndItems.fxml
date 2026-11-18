@@ -38,101 +38,111 @@
 
     <center>
         <ScrollPane fitToWidth="true" fitToHeight="true"
-                    style="-fx-background-color: #121214; -fx-background: #121214; -fx-border-color: transparent;">
+                    style="-fx-background-color: #0f0f12; -fx-background: #0f0f12; -fx-border-color: transparent; -fx-padding: 0;">
             <content>
-                <VBox alignment="CENTER" spacing="16.0" style="-fx-background-color: #121214;">
-                    <padding>
-                        <Insets top="15.0" right="25.0" bottom="20.0" left="25.0" />
-                    </padding>
-
+                <StackPane style="-fx-background-color: #0f0f12;">
                     <children>
-                        <Label text="HERNÍ POSTAVY" textFill="#FFD700">
-                            <font>
-                                <Font name="System Bold" size="24.0" />
-                            </font>
-                        </Label>
+                        <ImageView fitWidth="1600.0" fitHeight="925.0" preserveRatio="false" pickOnBounds="true">
+                            <image>
+                                <Image url="@../images/heroesbg.jpg" />
+                            </image>
+                        </ImageView>
 
-                        <GridPane hgap="15.0" vgap="16.0" maxWidth="950.0" alignment="CENTER">
-                            <columnConstraints>
-                                <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.33" />
-                                <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.33" />
-                                <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.33" />
-                            </columnConstraints>
-                            <rowConstraints>
-                                <RowConstraints vgrow="SOMETIMES" />
-                                <RowConstraints vgrow="SOMETIMES" />
-                            </rowConstraints>
-                            <children>
-                                <StackPane styleClass="card-container" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                                    <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/rytirnahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
-
-                                <StackPane styleClass="card-container" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                                    <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/carodejnicenahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
-
-                                <StackPane styleClass="card-container" GridPane.columnIndex="2" GridPane.rowIndex="0">
-                                    <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/banditanahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
-
-                                <StackPane styleClass="card-container" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                                    <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/nekromantnahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
-
-                                <StackPane styleClass="card-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                    <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/elfkanahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
-
-                                <StackPane styleClass="card-container" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                                    <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/kralovnanahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
-                            </children>
-                        </GridPane>
-
-                        <Label text="HERNÍ PŘEDMĚTY" textFill="#FFD700">
+                        <VBox alignment="CENTER" spacing="16.0" style="-fx-background-color: rgba(18, 18, 20, 0.55);">
                             <padding>
-                                <Insets top="6.0" />
+                                <Insets top="15.0" right="25.0" bottom="20.0" left="25.0" />
                             </padding>
-                            <font>
-                                <Font name="System Bold" size="24.0" />
-                            </font>
-                        </Label>
 
-                        <HBox spacing="20.0" maxWidth="950.0" alignment="CENTER">
                             <children>
-                                <StackPane styleClass="card-container">
-                                    <ImageView fitHeight="215.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/teleportnahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
+                                <Label text="HERNÍ POSTAVY" textFill="#FFD700">
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font>
+                                </Label>
 
-                                <StackPane styleClass="card-container">
-                                    <ImageView fitHeight="215.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/sedmanahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
+                                <GridPane hgap="15.0" vgap="16.0" maxWidth="950.0" alignment="CENTER">
+                                    <columnConstraints>
+                                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.33" />
+                                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.33" />
+                                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="33.33" />
+                                    </columnConstraints>
+                                    <rowConstraints>
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                        <RowConstraints vgrow="SOMETIMES" />
+                                    </rowConstraints>
+                                    <children>
+                                        <StackPane styleClass="card-container" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                            <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/rytirnahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
 
-                                <StackPane styleClass="card-container">
-                                    <ImageView fitHeight="215.0" preserveRatio="true" pickOnBounds="true">
-                                        <image><Image url="@../images/cmajznahled.png" /></image>
-                                    </ImageView>
-                                </StackPane>
+                                        <StackPane styleClass="card-container" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                            <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/carodejnicenahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+
+                                        <StackPane styleClass="card-container" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                                            <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/banditanahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+
+                                        <StackPane styleClass="card-container" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                            <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/nekromantnahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+
+                                        <StackPane styleClass="card-container" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                            <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/elfkanahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+
+                                        <StackPane styleClass="card-container" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                                            <ImageView fitHeight="225.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/kralovnanahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+                                    </children>
+                                </GridPane>
+
+                                <Label text="HERNÍ PŘEDMĚTY" textFill="#FFD700">
+                                    <padding>
+                                        <Insets top="6.0" />
+                                    </padding>
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font>
+                                </Label>
+
+                                <HBox spacing="20.0" maxWidth="950.0" alignment="CENTER">
+                                    <children>
+                                        <StackPane styleClass="card-container">
+                                            <ImageView fitHeight="215.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/teleportnahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+
+                                        <StackPane styleClass="card-container">
+                                            <ImageView fitHeight="215.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/sedmanahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+
+                                        <StackPane styleClass="card-container">
+                                            <ImageView fitHeight="215.0" preserveRatio="true" pickOnBounds="true">
+                                                <image><Image url="@../images/cmajznahled.png" /></image>
+                                            </ImageView>
+                                        </StackPane>
+                                    </children>
+                                </HBox>
                             </children>
-                        </HBox>
+                        </VBox>
                     </children>
-                </VBox>
+                </StackPane>
             </content>
         </ScrollPane>
     </center>
