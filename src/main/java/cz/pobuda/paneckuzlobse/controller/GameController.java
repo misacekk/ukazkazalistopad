@@ -125,6 +125,7 @@ public class GameController {
             URL soundUrl = getClass().getResource("/cz/pobuda/paneckuzlobse/sounds/dicerollsoundeffect.mp3");
             if (soundUrl != null) {
                 diceRollSound = new AudioClip(soundUrl.toExternalForm());
+                diceRollSound.setVolume(0.5);
             } else {
                 System.err.println("Upozornění: Zvuk dicerollsoundeffect.mp3 nebyl nalezen ve složce /sounds/.");
             }
