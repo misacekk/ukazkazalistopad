@@ -145,7 +145,7 @@
                                         <TextFlow lineSpacing="3.0">
                                             <children>
                                                 <Text text="• Schopnosti hrdinů: " style="-fx-font-family: 'Georgia'; -fx-font-weight: bold; -fx-font-size: 16px; -fx-fill: #1c0f07;" />
-                                                <Text text="Každý hrdina má unikátní pasivní nebo aktivní schopnost, kterou lze použít jednou za tah." style="-fx-font-family: 'Georgia'; -fx-font-size: 16px; -fx-fill: #2b180c;" />
+                                                <Text text="Každý hrdina má unikátní pasivní nebo aktivní schopnost, kterou lze použít jednou za 'život' figurky." style="-fx-font-family: 'Georgia'; -fx-font-size: 16px; -fx-fill: #2b180c;" />
                                             </children>
                                         </TextFlow>
 

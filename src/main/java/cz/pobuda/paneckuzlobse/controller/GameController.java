@@ -13,9 +13,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.Image;
@@ -31,9 +29,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 public class GameController {
 
@@ -54,6 +54,11 @@ public class GameController {
     @FXML private Label statusLabel;
     @FXML private Label roundLabel;
 
+    @FXML private VBox victoryOverlay;
+    @FXML private ImageView winnerHeroCardView;
+    @FXML private Label winnerTitleLabel;
+    @FXML private Label winnerStatsLabel;
+
     @FXML private ImageView activeHeroCardView;
     @FXML private Label activeHeroAbilityStatus;
     @FXML private ScrollPane logScrollPane;
@@ -68,10 +73,17 @@ public class GameController {
     private int targetPlayerCount = 4;
     private final List<Player> players = new ArrayList<>();
     private final Map<Pawn, ImageView> pawnTokenMap = new HashMap<>();
+    private final Set<Pawn> pawnAbilityUsed = new HashSet<>();
     private int currentPlayerIndex = 0;
     private int roundNumber = 1;
 
     private boolean waitingForPawnSelection = false;
+    private boolean waitingForAbilityPawnSelection = false;
+    private List<Pawn> abilitySelectablePawns = new ArrayList<>();
+    private Pawn doubleRollTargetPawn = null;
+
+    private boolean hasRolledInTurn = false;
+    private boolean hasUsedItemInTurn = false;
     private List<Pawn> movablePawnsCurrentTurn = new ArrayList<>();
     private boolean canSpawnCurrentTurn = false;
     private int lastRolledDiceValue = 0;
@@ -97,7 +109,13 @@ public class GameController {
             bottomBar.setManaged(false);
         }
         if (itemSelectionOverlay != null) itemSelectionOverlay.setVisible(false);
+        if (victoryOverlay != null) {
+            victoryOverlay.setVisible(false);
+            victoryOverlay.setManaged(false);
+        }
 
+        pawnAbilityUsed.clear();
+        doubleRollTargetPawn = null;
         loadSoundEffects();
         setupBoardUI();
     }
@@ -221,7 +239,12 @@ public class GameController {
     private void startTurn() {
         Player p = getCurrentPlayer();
         p.resetTurn();
+
         waitingForPawnSelection = false;
+        waitingForAbilityPawnSelection = false;
+        abilitySelectablePawns.clear();
+        hasRolledInTurn = false;
+        hasUsedItemInTurn = false;
         movablePawnsCurrentTurn.clear();
         canSpawnCurrentTurn = false;
 
@@ -271,12 +294,17 @@ public class GameController {
     @FXML
     private void hoditKostkou() {
         Player p = getCurrentPlayer();
-        if (p.hasRolledThisTurn()) {
+        if (waitingForAbilityPawnSelection) {
+            if (statusLabel != null) statusLabel.setText("Nejdřív vyber figurku pro schopnost, nebo klikni znovu na Použít schopnost.");
+            return;
+        }
+        if (p.hasRolledThisTurn() || hasRolledInTurn || hasUsedItemInTurn || waitingForPawnSelection) {
             if (statusLabel != null) statusLabel.setText("V tomto tahu už jsi házel nebo použil předmět!");
             return;
         }
 
         p.setHasRolledThisTurn(true);
+        hasRolledInTurn = true;
         playDiceRollSound();
 
         Timeline diceAnimation = new Timeline();
@@ -318,9 +346,20 @@ public class GameController {
     }
 
     private void handlePawnClick(Pawn clickedPawn) {
-        if (!waitingForPawnSelection) return;
-
         Player p = getCurrentPlayer();
+
+        if (waitingForAbilityPawnSelection) {
+            if (clickedPawn.getOwner() != p || !abilitySelectablePawns.contains(clickedPawn)) {
+                return;
+            }
+            waitingForAbilityPawnSelection = false;
+            abilitySelectablePawns.clear();
+            activateHeroAbilityForPawn(p, clickedPawn);
+            updateActiveHeroCard();
+            return;
+        }
+
+        if (!waitingForPawnSelection) return;
         if (clickedPawn.getOwner() != p) return;
 
         if (clickedPawn.isInHouse()) {
@@ -338,6 +377,10 @@ public class GameController {
 
     private void executeSpawn(Pawn pawn, int diceValue) {
         Player p = pawn.getOwner();
+        pawnAbilityUsed.remove(pawn);
+        if (doubleRollTargetPawn == pawn) {
+            doubleRollTargetPawn = null;
+        }
         pawn.setInHouse(false);
         pawn.stepToTile(p.getStartTileIndex());
         pawn.setTotalStepsMoved(0);
@@ -345,19 +388,26 @@ public class GameController {
         addLog("Hráč " + p.getId() + " nasadil novou figurku.");
         checkKickout(pawn);
         updatePlayersPanel();
+        updateActiveHeroCard();
 
-        if (statusLabel != null) {
-            statusLabel.setText("Hráč " + p.getId() + " nasadil novou figurku! Hází znovu.");
-        }
         p.setHasRolledThisTurn(false);
+        hasRolledInTurn = false;
+        if (statusLabel != null) {
+            statusLabel.setText("Hráč " + p.getId() + " nasadil novou figurku! Hází znovu nebo může použít předmět.");
+        }
     }
 
     private void executePawnMove(Pawn pawn, int diceValue) {
         Player p = pawn.getOwner();
+        int entranceSteps = BoardPath.getPathLength() - 1;
 
-        if (pawn.isAtEntranceTile()) {
+        if (pawn.getTotalStepsMoved() >= entranceSteps) {
             if (diceValue == 1) {
                 pawn.setInFinish(true);
+                if (doubleRollTargetPawn == pawn) {
+                    doubleRollTargetPawn = null;
+                    p.setDoubleRollActive(false);
+                }
                 updatePawnPosition(pawn);
                 updatePlayersPanel();
                 addLog("Hráč " + p.getId() + " dostal figurku do domečku! (" + p.getScore() + "/4)");
@@ -372,13 +422,14 @@ public class GameController {
         }
 
         int steps = diceValue;
-        if (p.isDoubleRollActive()) {
+        if (p.isDoubleRollActive() && (doubleRollTargetPawn == null || doubleRollTargetPawn == pawn)) {
             steps *= 2;
             p.setDoubleRollActive(false);
+            doubleRollTargetPawn = null;
             updateActiveHeroCard();
         }
 
-        int stepsToEntrance = pawn.getStepsToEntrance();
+        int stepsToEntrance = entranceSteps - pawn.getTotalStepsMoved();
         int actualSteps = Math.min(steps, stepsToEntrance);
 
         animatePawnMovement(pawn, actualSteps, () -> {
@@ -388,8 +439,9 @@ public class GameController {
 
             if (diceValue == 6) {
                 p.setHasRolledThisTurn(false);
+                hasRolledInTurn = false;
                 if (statusLabel != null && !BoardPath.isItemTile(pawn.getCurrentTileIndex())) {
-                    statusLabel.setText("Hodil jsi 6! Házíš znovu.");
+                    statusLabel.setText("Hodil jsi 6! Házíš znovu nebo můžeš použít předmět.");
                 }
             } else {
                 nextTurn();
@@ -428,18 +480,28 @@ public class GameController {
             for (Pawn defenderPawn : defender.getPawns()) {
                 if (!defenderPawn.isInHouse() && !defenderPawn.isInFinish()) {
                     if (defenderPawn.getCurrentTileIndex() == attackerPawn.getCurrentTileIndex()) {
-                        if (defender.getHeroClass() == HeroClass.RYTIR) {
+                        if (defender.getHeroClass() == HeroClass.RYTIR && !pawnAbilityUsed.contains(defenderPawn)) {
+                            pawnAbilityUsed.add(defenderPawn);
                             addLog("Rytíř (Hráč " + defender.getId() + ") zablokoval vyhození štítem!");
                             continue;
                         }
 
-                        if (defender.getHeroClass() == HeroClass.NEKROMANT) {
+                        if (defender.getHeroClass() == HeroClass.NEKROMANT && !pawnAbilityUsed.contains(defenderPawn)) {
+                            pawnAbilityUsed.add(defenderPawn);
                             defenderPawn.setInHouse(false);
                             defenderPawn.stepToTile(defender.getStartTileIndex());
                             defenderPawn.setTotalStepsMoved(0);
                             updatePawnPosition(defenderPawn);
                             addLog("Nekromant (Hráč " + defender.getId() + ") byl vyhozen, ale ožil na startu!");
+                            if (statusLabel != null) {
+                                statusLabel.setText("Nekromant (Hráč " + defender.getId() + ") ožil na svém startu!");
+                            }
                         } else {
+                            pawnAbilityUsed.remove(defenderPawn);
+                            if (doubleRollTargetPawn == defenderPawn) {
+                                doubleRollTargetPawn = null;
+                                defender.setDoubleRollActive(false);
+                            }
                             defenderPawn.resetToSpawn();
                             updatePawnPosition(defenderPawn);
                             addLog("Hráč " + attackerPawn.getOwner().getId() + " vyhodil figurku Hráče " + defender.getId() + "!");
@@ -450,62 +512,170 @@ public class GameController {
         }
     }
 
+    private Pawn getQueenActiveImmunityPawn(Player queenPlayer) {
+        if (queenPlayer.getHeroClass() != HeroClass.KRALOVNA) return null;
+        for (Pawn pawn : queenPlayer.getPawnsOnBoard()) {
+            if (!pawnAbilityUsed.contains(pawn)) {
+                return pawn;
+            }
+        }
+        return null;
+    }
+
     @FXML
     private void pouzitSchopnost() {
         Player p = getCurrentPlayer();
-        if (p.hasUsedAbility()) return;
+        HeroClass hc = p.getHeroClass();
 
+        if (hc == HeroClass.RYTIR || hc == HeroClass.NEKROMANT || hc == HeroClass.KRALOVNA) {
+            if (statusLabel != null) {
+                statusLabel.setText("Tato postava má pasivní schopnost, která působí automaticky.");
+            }
+            return;
+        }
+
+        if (waitingForAbilityPawnSelection) {
+            waitingForAbilityPawnSelection = false;
+            abilitySelectablePawns.clear();
+            if (statusLabel != null) {
+                statusLabel.setText("Výběr figurky pro schopnost zrušen.");
+            }
+            return;
+        }
+
+        if (p.hasUsedAbility()) {
+            if (statusLabel != null) statusLabel.setText("Schopnost už byla v tomto tahu použita!");
+            return;
+        }
+
+        List<Pawn> candidates = getEligibleAbilityPawns(p);
+        if (candidates.isEmpty()) {
+            if (hc == HeroClass.ELFKA && hasReadyPawnOnBoard(p)) {
+                if (statusLabel != null) {
+                    statusLabel.setText("V dosahu 1–3 polí za tvou figurkou není žádný platný soupeř!");
+                }
+            } else {
+                if (statusLabel != null) {
+                    statusLabel.setText("Žádná tvá figurka na desce už nemá připravenou schopnost!");
+                }
+            }
+            return;
+        }
+
+        if (candidates.size() == 1) {
+            activateHeroAbilityForPawn(p, candidates.get(0));
+            updateActiveHeroCard();
+        } else {
+            waitingForAbilityPawnSelection = true;
+            abilitySelectablePawns = candidates;
+            if (statusLabel != null) {
+                statusLabel.setText("Klikni na figurku v pravém panelu nebo na desce, pro kterou chceš použít schopnost!");
+            }
+        }
+    }
+
+    private boolean hasReadyPawnOnBoard(Player p) {
+        for (Pawn pawn : p.getPawnsOnBoard()) {
+            if (!pawnAbilityUsed.contains(pawn)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<Pawn> getEligibleAbilityPawns(Player p) {
+        List<Pawn> result = new ArrayList<>();
         switch (p.getHeroClass()) {
             case CARODEJNICE:
-                p.setDoubleRollActive(true);
-                p.setAbilityUsed(true);
-                addLog("Čarodějnice (Hráč " + p.getId() + ") aktivovala Dvojitý hod!");
-                if (statusLabel != null) statusLabel.setText("Čarodějnice aktivovala Dvojitý hod!");
-                break;
             case BANDITA:
-                int nextIdx = (currentPlayerIndex + 1) % players.size();
-                Player victim = players.get(nextIdx);
-                if (victim.getHeroClass() != HeroClass.KRALOVNA) {
-                    victim.setSkipped(true);
-                    p.setHasRolledThisTurn(false);
-                    p.setAbilityUsed(true);
-                    addLog("Bandita (Hráč " + p.getId() + ") ukradl tah Hráči " + victim.getId() + "!");
-                    if (statusLabel != null) statusLabel.setText("Bandita ukradl tah Hráči " + victim.getId() + "!");
-                } else if (statusLabel != null) {
-                    statusLabel.setText("Královna je imunní vůči schopnosti Bandity!");
+                for (Pawn pawn : p.getPawnsOnBoard()) {
+                    if (!pawnAbilityUsed.contains(pawn)) {
+                        result.add(pawn);
+                    }
                 }
                 break;
             case ELFKA:
-                Pawn targetEnemyPawn = findTargetForElfka(p);
-                if (targetEnemyPawn != null && targetEnemyPawn.getOwner().getHeroClass() != HeroClass.KRALOVNA) {
-                    int newTile = (targetEnemyPawn.getCurrentTileIndex() - 3 + BoardPath.getPathLength()) % BoardPath.getPathLength();
-                    targetEnemyPawn.stepToTile(newTile);
-                    targetEnemyPawn.setTotalStepsMoved(Math.max(0, targetEnemyPawn.getTotalStepsMoved() - 3));
-                    updatePawnPosition(targetEnemyPawn);
-                    p.setAbilityUsed(true);
-                    addLog("Elfka (Hráč " + p.getId() + ") odrazila figurku Hráče " + targetEnemyPawn.getOwner().getId() + " o 3 pole zpět!");
-                    if (statusLabel != null) {
-                        statusLabel.setText("Elfka odrazila figurku Hráče " + targetEnemyPawn.getOwner().getId() + " o 3 pole zpět!");
+                for (Pawn pawn : p.getPawnsOnBoard()) {
+                    if (!pawnAbilityUsed.contains(pawn) && findTargetForElfkaPawn(p, pawn) != null) {
+                        result.add(pawn);
                     }
-                } else if (statusLabel != null) {
-                    statusLabel.setText("V dosahu 1–3 polí za tvou figurkou není žádný platný soupeř!");
                 }
                 break;
             default:
                 break;
         }
-        updateActiveHeroCard();
+        return result;
     }
 
-    private Pawn findTargetForElfka(Player elfkaPlayer) {
-        for (Pawn myPawn : elfkaPlayer.getPawnsOnBoard()) {
-            for (Player other : players) {
-                if (other == elfkaPlayer) continue;
-                for (Pawn enemyPawn : other.getPawnsOnBoard()) {
-                    int distBehind = (myPawn.getCurrentTileIndex() - enemyPawn.getCurrentTileIndex() + BoardPath.getPathLength()) % BoardPath.getPathLength();
-                    if (distBehind >= 1 && distBehind <= 3) {
-                        return enemyPawn;
+    private void activateHeroAbilityForPawn(Player p, Pawn chosenPawn) {
+        switch (p.getHeroClass()) {
+            case CARODEJNICE:
+                p.setDoubleRollActive(true);
+                doubleRollTargetPawn = chosenPawn;
+                p.setAbilityUsed(true);
+                pawnAbilityUsed.add(chosenPawn);
+                addLog("Čarodějnice (Hráč " + p.getId() + ") aktivovala Dvojitý hod!");
+                if (statusLabel != null) statusLabel.setText("Čarodějnice aktivovala Dvojitý hod!");
+                break;
+
+            case BANDITA:
+                int nextIdx = (currentPlayerIndex + 1) % players.size();
+                Player victim = players.get(nextIdx);
+                Pawn queenShieldPawn = getQueenActiveImmunityPawn(victim);
+                if (queenShieldPawn != null) {
+                    pawnAbilityUsed.add(queenShieldPawn);
+                    p.setAbilityUsed(true);
+                    pawnAbilityUsed.add(chosenPawn);
+                    addLog("Královna (Hráč " + victim.getId() + ") zablokovala schopnost Bandity!");
+                    if (statusLabel != null) statusLabel.setText("Královna je imunní vůči schopnosti Bandity!");
+                } else {
+                    victim.setSkipped(true);
+                    p.setHasRolledThisTurn(false);
+                    hasRolledInTurn = false;
+                    p.setAbilityUsed(true);
+                    pawnAbilityUsed.add(chosenPawn);
+                    addLog("Bandita (Hráč " + p.getId() + ") ukradl tah Hráči " + victim.getId() + "!");
+                    if (statusLabel != null) statusLabel.setText("Bandita ukradl tah Hráči " + victim.getId() + "!");
+                }
+                break;
+
+            case ELFKA:
+                Pawn targetEnemyPawn = findTargetForElfkaPawn(p, chosenPawn);
+                if (targetEnemyPawn != null) {
+                    Player enemyOwner = targetEnemyPawn.getOwner();
+                    if (enemyOwner.getHeroClass() == HeroClass.KRALOVNA && !pawnAbilityUsed.contains(targetEnemyPawn)) {
+                        pawnAbilityUsed.add(targetEnemyPawn);
+                        p.setAbilityUsed(true);
+                        pawnAbilityUsed.add(chosenPawn);
+                        addLog("Královna (Hráč " + enemyOwner.getId() + ") odrazila schopnost Elfky!");
+                        if (statusLabel != null) statusLabel.setText("Královna je imunní vůči schopnosti Elfky!");
+                    } else {
+                        int newTile = (targetEnemyPawn.getCurrentTileIndex() - 3 + BoardPath.getPathLength()) % BoardPath.getPathLength();
+                        targetEnemyPawn.stepToTile(newTile);
+                        targetEnemyPawn.setTotalStepsMoved(Math.max(0, targetEnemyPawn.getTotalStepsMoved() - 3));
+                        updatePawnPosition(targetEnemyPawn);
+                        p.setAbilityUsed(true);
+                        pawnAbilityUsed.add(chosenPawn);
+                        addLog("Elfka (Hráč " + p.getId() + ") odrazila figurku Hráče " + enemyOwner.getId() + " o 3 pole zpět!");
+                        if (statusLabel != null) {
+                            statusLabel.setText("Elfka odrazila figurku Hráče " + enemyOwner.getId() + " o 3 pole zpět!");
+                        }
                     }
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private Pawn findTargetForElfkaPawn(Player elfkaPlayer, Pawn myPawn) {
+        for (Player other : players) {
+            if (other == elfkaPlayer) continue;
+            for (Pawn enemyPawn : other.getPawnsOnBoard()) {
+                int distBehind = (myPawn.getCurrentTileIndex() - enemyPawn.getCurrentTileIndex() + BoardPath.getPathLength()) % BoardPath.getPathLength();
+                if (distBehind >= 1 && distBehind <= 3) {
+                    return enemyPawn;
                 }
             }
         }
@@ -554,6 +724,19 @@ public class GameController {
 
     @FXML
     private void pouzitPredmet() {
+        Player p = getCurrentPlayer();
+        if (waitingForAbilityPawnSelection) {
+            if (statusLabel != null) statusLabel.setText("Nejdřív vyber figurku pro schopnost, nebo klikni znovu na Použít schopnost.");
+            return;
+        }
+        if (p.hasRolledThisTurn() || hasRolledInTurn || hasUsedItemInTurn || waitingForPawnSelection) {
+            if (statusLabel != null) statusLabel.setText("V tomto tahu už jsi házel nebo použil předmět!");
+            return;
+        }
+        if (p.getInventory().isEmpty()) {
+            if (statusLabel != null) statusLabel.setText("Nemáš žádné předměty v inventáři!");
+            return;
+        }
         if (itemSelectionOverlay != null) {
             populateItemSelectionOverlay();
             itemSelectionOverlay.setVisible(true);
@@ -586,12 +769,20 @@ public class GameController {
 
             Button useBtn = new Button("Použít");
             useBtn.setOnAction(e -> {
+                if (p.hasRolledThisTurn() || hasRolledInTurn || hasUsedItemInTurn || waitingForPawnSelection) return;
+
                 boolean success = applyItemEffect(item);
                 if (success) {
+                    p.setHasRolledThisTurn(true);
+                    hasUsedItemInTurn = true;
                     p.getInventory().remove(item);
                     updateInventoryUI();
                     updatePlayersPanel();
                     zavritVyberPredmetu();
+
+                    if (item != Item.STASTNA_SEDMA) {
+                        nextTurn();
+                    }
                 }
             });
 
@@ -614,11 +805,13 @@ public class GameController {
                 Pawn myPawn = myPawns.get(0);
                 Pawn closestEnemyPawn = null;
                 int minDistance = Integer.MAX_VALUE;
+                int pathLength = BoardPath.getPathLength();
 
                 for (Player enemy : players) {
                     if (enemy == p) continue;
                     for (Pawn enemyPawn : enemy.getPawnsOnBoard()) {
-                        int dist = Math.abs(enemyPawn.getCurrentTileIndex() - myPawn.getCurrentTileIndex());
+                        int rawDist = Math.abs(enemyPawn.getCurrentTileIndex() - myPawn.getCurrentTileIndex());
+                        int dist = Math.min(rawDist, pathLength - rawDist);
                         if (dist < minDistance) {
                             minDistance = dist;
                             closestEnemyPawn = enemyPawn;
@@ -632,29 +825,21 @@ public class GameController {
                 }
 
                 int myTile = myPawn.getCurrentTileIndex();
-                int mySteps = myPawn.getTotalStepsMoved();
+                int enemyTile = closestEnemyPawn.getCurrentTileIndex();
 
-                myPawn.stepToTile(closestEnemyPawn.getCurrentTileIndex());
-                myPawn.setTotalStepsMoved(closestEnemyPawn.getTotalStepsMoved());
+                myPawn.stepToTile(enemyTile);
+                myPawn.setTotalStepsMoved((enemyTile - myPawn.getOwner().getStartTileIndex() + pathLength) % pathLength);
 
                 closestEnemyPawn.stepToTile(myTile);
-                closestEnemyPawn.setTotalStepsMoved(mySteps);
+                closestEnemyPawn.setTotalStepsMoved((myTile - closestEnemyPawn.getOwner().getStartTileIndex() + pathLength) % pathLength);
 
                 updatePawnPosition(myPawn);
                 updatePawnPosition(closestEnemyPawn);
 
                 addLog("Hráč " + p.getId() + " použil Teleport na Hráče " + closestEnemyPawn.getOwner().getId() + ".");
-                if (statusLabel != null) {
-                    statusLabel.setText("Prohodil sis pozici s figurkou Hráče " + closestEnemyPawn.getOwner().getId() + "!");
-                }
                 return true;
 
             case STASTNA_SEDMA:
-                if (p.hasRolledThisTurn()) {
-                    if (statusLabel != null) statusLabel.setText("V tomto tahu už jsi házel!");
-                    return false;
-                }
-
                 List<Pawn> movablePawns = p.getPawnsOnBoard();
                 if (movablePawns.isEmpty()) {
                     if (statusLabel != null) statusLabel.setText("Nemáš na desce žádnou figurku pro posun o 7!");
@@ -662,6 +847,7 @@ public class GameController {
                 }
 
                 p.setHasRolledThisTurn(true);
+                hasUsedItemInTurn = true;
                 this.lastRolledDiceValue = 7;
                 addLog("Hráč " + p.getId() + " použil Šťastnou sedmu (+7 polí).");
 
@@ -694,9 +880,6 @@ public class GameController {
                 p.addItem(stolenItem);
 
                 addLog("Hráč " + p.getId() + " použil Čmajz a ukradl " + stolenItem.getName() + " Hráči " + victim.getId() + ".");
-                if (statusLabel != null) {
-                    statusLabel.setText("Ukradl jsi předmět " + stolenItem.getName() + " Hráči " + victim.getId() + "!");
-                }
                 return true;
         }
 
@@ -753,12 +936,8 @@ public class GameController {
         boardContainer.getChildren().addAll(boardImage, tokenLayer);
     }
 
-    private void updateActiveHeroCard() {
-        if (activeHeroCardView == null || players.isEmpty()) return;
-        Player p = getCurrentPlayer();
-        HeroClass hc = p.getHeroClass();
-
-        String cardFile = switch (hc) {
+    private String getHeroCardFileName(HeroClass hc) {
+        return switch (hc) {
             case RYTIR -> "rytirnahled.png";
             case CARODEJNICE -> "carodejnicenahled.png";
             case BANDITA -> "banditanahled.png";
@@ -766,8 +945,25 @@ public class GameController {
             case ELFKA -> "elfkanahled.png";
             case KRALOVNA -> "kralovnanahled.png";
         };
+    }
 
-        InputStream is = getClass().getResourceAsStream("/cz/pobuda/paneckuzlobse/images/" + cardFile);
+    private String getHeroCzechName(HeroClass hc) {
+        return switch (hc) {
+            case RYTIR -> "Rytíř";
+            case CARODEJNICE -> "Čarodějnice";
+            case BANDITA -> "Bandita";
+            case NEKROMANT -> "Nekromant";
+            case ELFKA -> "Elfka";
+            case KRALOVNA -> "Královna";
+        };
+    }
+
+    private void updateActiveHeroCard() {
+        if (activeHeroCardView == null || players.isEmpty()) return;
+        Player p = getCurrentPlayer();
+        HeroClass hc = p.getHeroClass();
+
+        InputStream is = getClass().getResourceAsStream("/cz/pobuda/paneckuzlobse/images/" + getHeroCardFileName(hc));
         if (is != null) {
             activeHeroCardView.setImage(new Image(is));
         }
@@ -779,6 +975,9 @@ public class GameController {
                 activeHeroAbilityStatus.setStyle("-fx-text-fill: #5AC8FA; -fx-font-size: 12px; -fx-font-weight: bold;");
             } else if (p.hasUsedAbility()) {
                 activeHeroAbilityStatus.setText("Schopnost: Vyčerpána v tomto tahu");
+                activeHeroAbilityStatus.setStyle("-fx-text-fill: #FF453A; -fx-font-size: 12px; -fx-font-weight: bold;");
+            } else if (!hasReadyPawnOnBoard(p)) {
+                activeHeroAbilityStatus.setText("Schopnost: Žádná připravená figurka na desce");
                 activeHeroAbilityStatus.setStyle("-fx-text-fill: #FF453A; -fx-font-size: 12px; -fx-font-weight: bold;");
             } else {
                 activeHeroAbilityStatus.setText("Schopnost: Připravena k použití");
@@ -857,14 +1056,28 @@ public class GameController {
     }
 
     private void zobrazitVitezneOkno(Player vitez) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle("Konec hry!");
-        alert.setHeaderText("🎉 VÍTĚZSTVÍ! 🎉");
-        alert.setContentText("Hráč " + vitez.getId() + " VYHRÁVÁ HRU!");
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) App.zmenScenu("/cz/pobuda/paneckuzlobse/fxml/Menu.fxml");
-        });
+        if (statusLabel != null) {
+            statusLabel.setText("Hráč " + vitez.getId() + " (" + getHeroCzechName(vitez.getHeroClass()) + ") vyhrál hru!");
+        }
+        if (winnerTitleLabel != null) {
+            winnerTitleLabel.setText("Hráč " + vitez.getId() + " (" + getHeroCzechName(vitez.getHeroClass()) + ") vyhrává!");
+        }
+        if (winnerStatsLabel != null) {
+            winnerStatsLabel.setText("Celkový počet kol: " + roundNumber);
+        }
+        if (winnerHeroCardView != null) {
+            InputStream is = getClass().getResourceAsStream("/cz/pobuda/paneckuzlobse/images/" + getHeroCardFileName(vitez.getHeroClass()));
+            if (is != null) {
+                winnerHeroCardView.setImage(new Image(is));
+            }
+        }
+        if (victoryOverlay != null) {
+            victoryOverlay.setManaged(true);
+            victoryOverlay.setVisible(true);
+        }
     }
+
+    @FXML private void hratZnovu() { App.zmenScenu("/cz/pobuda/paneckuzlobse/fxml/Game.fxml"); }
 
     @FXML private void zpetDoMenu() { App.zmenScenu("/cz/pobuda/paneckuzlobse/fxml/Menu.fxml"); }
 }

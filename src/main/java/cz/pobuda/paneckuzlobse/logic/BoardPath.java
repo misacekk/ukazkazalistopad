@@ -231,6 +231,11 @@ public class BoardPath {
         return indices[playerSlot % indices.length];
     }
 
+    public static int getEntranceTileIndex(int playerSlot) {
+        int length = getPathLength();
+        return (getStartTileIndex(playerSlot) - 1 + length) % length;
+    }
+
     public static TilePosition getSpawnPosition(int playerSlot, int pawnId) {
         List<List<TilePosition>> spawns = is2PlayerReady() ? SPAWNS_2P : (is3PlayerReady() ? SPAWNS_3P : SPAWNS_4P);
         return spawns.get(playerSlot % spawns.size()).get(pawnId % 4);
