@@ -246,19 +246,6 @@ public class BoardPath {
         return finishes.get(playerSlot % finishes.size()).get(pawnId % 4);
     }
 
-    public static boolean isItemTile(int index) {
-        List<TilePosition> path = getActivePath();
-        int safeIndex = (index % path.size() + path.size()) % path.size();
-
-        if (is2PlayerReady()) {
-            return safeIndex == 6 || safeIndex == 17;
-        } else if (is3PlayerReady()) {
-            return safeIndex == 5 || safeIndex == 15 || safeIndex == 25;
-        } else {
-            return safeIndex == 5 || safeIndex == 15 || safeIndex == 25 || safeIndex == 35;
-        }
-    }
-
     public static int getPathLength() {
         return getActivePath().size();
     }

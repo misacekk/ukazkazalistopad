@@ -10,12 +10,8 @@ public class Player {
     private final List<Pawn> pawns = new ArrayList<>();
 
     private boolean hasRolledThisTurn = false;
-    private boolean abilityUsed = false;
-    private boolean doubleRollActive = false;
-    private boolean skipped = false;
 
     public static final int TARGET_SCORE = 4;
-    private final List<Item> inventory = new ArrayList<>();
 
     public Player(int id, HeroClass heroClass) {
         this.id = id;
@@ -55,21 +51,6 @@ public class Player {
 
     public boolean hasRolledThisTurn() { return hasRolledThisTurn; }
     public void setHasRolledThisTurn(boolean hasRolledThisTurn) { this.hasRolledThisTurn = hasRolledThisTurn; }
-
-    public boolean hasUsedAbility() { return abilityUsed; }
-    public void setAbilityUsed(boolean abilityUsed) { this.abilityUsed = abilityUsed; }
-
-    public boolean isDoubleRollActive() { return doubleRollActive; }
-    public void setDoubleRollActive(boolean doubleRollActive) { this.doubleRollActive = doubleRollActive; }
-
-    public boolean isSkipped() { return skipped; }
-    public void setSkipped(boolean skipped) { this.skipped = skipped; }
-
-    public List<Item> getInventory() { return inventory; }
-
-    public void addItem(Item item) {
-        if (inventory.size() < 3) inventory.add(item);
-    }
 
     public void resetTurn() { this.hasRolledThisTurn = false; }
 
