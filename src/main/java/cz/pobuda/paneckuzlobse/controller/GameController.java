@@ -321,7 +321,7 @@ public class GameController {
             addLog("Hráč " + p.getId() + " hodil " + diceValue + ".");
 
             canSpawnCurrentTurn = (diceValue == 6) && (p.getPawnInHouse() != null);
-            movablePawnsCurrentTurn = p.getPawnsOnBoard();
+            movablePawnsCurrentTurn = getMovablePawns(p, diceValue);
 
             if (!canSpawnCurrentTurn && movablePawnsCurrentTurn.isEmpty()) {
                 if (statusLabel != null) {
@@ -346,6 +346,53 @@ public class GameController {
         diceAnimation.play();
     }
 
+    private int getEffectiveSteps(Player p, Pawn pawn, int baseSteps) {
+        if (p.isDoubleRollActive() && (doubleRollTargetPawn == null || doubleRollTargetPawn == pawn)) {
+            return baseSteps * 2;
+        }
+        return baseSteps;
+    }
+
+    private int getTargetFinishSlot(Player p, Pawn pawn, int effectiveSteps) {
+        if (pawn.isInHouse() || pawn.isInFinish()) {
+            return -1;
+        }
+
+        int entranceSteps = BoardPath.getPathLength() - 1;
+        int stepsToEntrance = entranceSteps - pawn.getTotalStepsMoved();
+        if (effectiveSteps <= stepsToEntrance) {
+            return -2;
+        }
+
+        int finishStep = effectiveSteps - stepsToEntrance;
+        int targetSlot = finishStep - 1;
+        if (targetSlot < 0 || targetSlot >= Player.TARGET_SCORE) {
+            return -1;
+        }
+
+        if (p.isFinishSlotOccupied(targetSlot)) {
+            return -1;
+        }
+
+        return targetSlot;
+    }
+
+    private boolean canPawnMove(Player p, Pawn pawn, int baseSteps) {
+        if (pawn.isInHouse() || pawn.isInFinish()) return false;
+        int effectiveSteps = getEffectiveSteps(p, pawn, baseSteps);
+        return getTargetFinishSlot(p, pawn, effectiveSteps) != -1;
+    }
+
+    private List<Pawn> getMovablePawns(Player p, int baseSteps) {
+        List<Pawn> movable = new ArrayList<>();
+        for (Pawn pawn : p.getPawns()) {
+            if (!pawn.isInHouse() && !pawn.isInFinish() && canPawnMove(p, pawn, baseSteps)) {
+                movable.add(pawn);
+            }
+        }
+        return movable;
+    }
+
     private void handlePawnClick(Pawn clickedPawn) {
         Player p = getCurrentPlayer();
 
@@ -368,11 +415,9 @@ public class GameController {
                 waitingForPawnSelection = false;
                 executeSpawn(clickedPawn, lastRolledDiceValue);
             }
-        } else if (!clickedPawn.isInFinish()) {
-            if (movablePawnsCurrentTurn.contains(clickedPawn)) {
-                waitingForPawnSelection = false;
-                executePawnMove(clickedPawn, lastRolledDiceValue);
-            }
+        } else if (!clickedPawn.isInFinish() && movablePawnsCurrentTurn.contains(clickedPawn)) {
+            waitingForPawnSelection = false;
+            executePawnMove(clickedPawn, lastRolledDiceValue);
         }
     }
 
@@ -400,40 +445,63 @@ public class GameController {
 
     private void executePawnMove(Pawn pawn, int diceValue) {
         Player p = pawn.getOwner();
-        int entranceSteps = BoardPath.getPathLength() - 1;
-
-        if (pawn.getTotalStepsMoved() >= entranceSteps) {
-            if (diceValue == 1) {
-                pawn.setInFinish(true);
-                if (doubleRollTargetPawn == pawn) {
-                    doubleRollTargetPawn = null;
-                    p.setDoubleRollActive(false);
-                }
-                updatePawnPosition(pawn);
-                updatePlayersPanel();
-                addLog("Hráč " + p.getId() + " dostal figurku do domečku! (" + p.getScore() + "/4)");
-
-                if (p.isFinished()) {
-                    zobrazitVitezneOkno(p);
-                    return;
-                }
-            }
+        if (pawn.isInHouse() || pawn.isInFinish()) {
             nextTurn();
             return;
         }
 
-        int steps = diceValue;
+        int effectiveSteps = getEffectiveSteps(p, pawn, diceValue);
+        int targetFinishSlot = getTargetFinishSlot(p, pawn, effectiveSteps);
+
+        if (targetFinishSlot == -1) {
+            nextTurn();
+            return;
+        }
+
         if (p.isDoubleRollActive() && (doubleRollTargetPawn == null || doubleRollTargetPawn == pawn)) {
-            steps *= 2;
             p.setDoubleRollActive(false);
             doubleRollTargetPawn = null;
             updateActiveHeroCard();
         }
 
-        int stepsToEntrance = entranceSteps - pawn.getTotalStepsMoved();
-        int actualSteps = Math.min(steps, stepsToEntrance);
+        int entranceSteps = BoardPath.getPathLength() - 1;
 
-        animatePawnMovement(pawn, actualSteps, () -> {
+        if (targetFinishSlot >= 0) {
+            int stepsToEntrance = Math.max(0, entranceSteps - pawn.getTotalStepsMoved());
+            animatePawnMovement(pawn, stepsToEntrance, () -> {
+                Timeline enterFinish = new Timeline(new KeyFrame(Duration.millis(200), event -> {
+                    pawn.setInFinish(true);
+                    pawn.setFinishSlotIndex(targetFinishSlot);
+                    if (doubleRollTargetPawn == pawn) {
+                        doubleRollTargetPawn = null;
+                    }
+                    updatePawnPosition(pawn);
+                }));
+                enterFinish.setOnFinished(event -> {
+                    updatePlayersPanel();
+                    addLog("Hráč " + p.getId() + " zajel s figurkou na " + (targetFinishSlot + 1) + ". místo v domečku! (" + p.getScore() + "/4)");
+
+                    if (p.isFinished()) {
+                        zobrazitVitezneOkno(p);
+                        return;
+                    }
+
+                    if (diceValue == 6) {
+                        p.setHasRolledThisTurn(false);
+                        hasRolledInTurn = false;
+                        if (statusLabel != null) {
+                            statusLabel.setText("Hodil jsi 6! Házíš znovu nebo můžeš použít předmět.");
+                        }
+                    } else {
+                        nextTurn();
+                    }
+                });
+                enterFinish.play();
+            });
+            return;
+        }
+
+        animatePawnMovement(pawn, effectiveSteps, () -> {
             checkKickout(pawn);
             checkItemPickUp(pawn);
             updatePlayersPanel();
@@ -684,6 +752,11 @@ public class GameController {
     }
 
     private void animatePawnMovement(Pawn pawn, int steps, Runnable onComplete) {
+        if (steps <= 0) {
+            if (onComplete != null) onComplete.run();
+            return;
+        }
+
         Timeline timeline = new Timeline();
         for (int i = 1; i <= steps; i++) {
             final int stepNum = i;
@@ -713,7 +786,8 @@ public class GameController {
         double offset = TOKEN_SIZE / 2.0;
 
         if (pawn.isInFinish()) {
-            TilePosition finishPos = BoardPath.getFinishPosition(pawn.getOwner().getSlotIndex(), pawn.getId());
+            int slot = pawn.getFinishSlotIndex() >= 0 ? pawn.getFinishSlotIndex() : pawn.getId();
+            TilePosition finishPos = BoardPath.getFinishPosition(pawn.getOwner().getSlotIndex(), slot);
             token.setLayoutX(finishPos.getX() - offset);
             token.setLayoutY(finishPos.getY() - offset);
         } else {
@@ -841,7 +915,7 @@ public class GameController {
                 return true;
 
             case STASTNA_SEDMA:
-                List<Pawn> movablePawns = p.getPawnsOnBoard();
+                List<Pawn> movablePawns = getMovablePawns(p, 7);
                 if (movablePawns.isEmpty()) {
                     if (statusLabel != null) statusLabel.setText("Nemáš na desce žádnou figurku pro posun o 7!");
                     return false;

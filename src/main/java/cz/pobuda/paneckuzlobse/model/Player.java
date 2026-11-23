@@ -42,6 +42,15 @@ public class Player {
         return count;
     }
 
+    public boolean isFinishSlotOccupied(int slotIndex) {
+        for (Pawn p : pawns) {
+            if (p.isInFinish() && p.getFinishSlotIndex() == slotIndex) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isFinished() { return getScore() >= TARGET_SCORE; }
 
     public boolean hasRolledThisTurn() { return hasRolledThisTurn; }

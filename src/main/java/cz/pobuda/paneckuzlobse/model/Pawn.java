@@ -9,6 +9,7 @@ public class Pawn {
     private int totalStepsMoved = 0;
     private boolean inHouse = true;
     private boolean inFinish = false;
+    private int finishSlotIndex = -1;
 
     public Pawn(int id, Player owner) {
         this.id = id;
@@ -39,18 +40,27 @@ public class Pawn {
     public void resetToSpawn() {
         this.inHouse = true;
         this.inFinish = false;
+        this.finishSlotIndex = -1;
         this.currentTileIndex = owner.getStartTileIndex();
         this.totalStepsMoved = 0;
     }
 
     public boolean isInFinish() { return inFinish; }
-    public void setInFinish(boolean inFinish) { this.inFinish = inFinish; }
+    public void setInFinish(boolean inFinish) {
+        this.inFinish = inFinish;
+        if (!inFinish) {
+            this.finishSlotIndex = -1;
+        }
+    }
+
+    public int getFinishSlotIndex() { return finishSlotIndex; }
+    public void setFinishSlotIndex(int finishSlotIndex) { this.finishSlotIndex = finishSlotIndex; }
 
     public boolean isAtEntranceTile() {
-        return !inHouse && !inFinish && totalStepsMoved >= BoardPath.getPathLength();
+        return !inHouse && !inFinish && totalStepsMoved >= BoardPath.getPathLength() - 1;
     }
 
     public int getStepsToEntrance() {
-        return Math.max(0, BoardPath.getPathLength() - totalStepsMoved);
+        return Math.max(0, (BoardPath.getPathLength() - 1) - totalStepsMoved);
     }
 }
